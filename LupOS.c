@@ -6,6 +6,7 @@
 #include <input/input.h>
 
 #include <string.h>
+#include <playerSettings.h>
 
 #include "lupos_icons.h"
 #define TAG "lupos-app"
@@ -73,10 +74,10 @@ static bool getPositionalDrift(int positionX, int positionY, int distanceToEdges
     if(positionY - distanceToEdges < 0) {
         return true;
     }
-    if(positionX + distanceToEdges + 18 > 128) {
+    if(positionX + distanceToEdges + IMAGE_SIZE > 128) {
         return true;
     }
-    if(positionY + distanceToEdges + 18 > 64) {
+    if(positionY + distanceToEdges + IMAGE_SIZE > 64) {
         return true;
     }
     return false;
@@ -129,7 +130,7 @@ static void lock_up_player(Canvas* canvas) {
         player_position.x = player_position.x + 4;
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     }
-    if(player_position.x + 2 + 18 > 128) {
+    if(player_position.x + 2 + IMAGE_SIZE > 128) {
         player_position.x = player_position.x - 4;
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     }
@@ -137,7 +138,7 @@ static void lock_up_player(Canvas* canvas) {
         player_position.y = player_position.y + 4;
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     }
-    if(player_position.y + 2 + 18 > 64) {
+    if(player_position.y + 2 + IMAGE_SIZE > 64) {
         player_position.y = player_position.y - 4;
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     } else {
