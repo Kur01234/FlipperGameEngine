@@ -15,21 +15,6 @@
 
 #define LUPOS_PATH LUPOS_APP_BASE_FOLDER "/map1.txt"
 
-// Screen is 128x64 px
-static void app_draw_callback(Canvas* canvas, void* ctx) {
-    UNUSED(ctx);
-    canvas_clear(canvas);
-}
-
-// also should be able to load and svae the data to make easy level saves and also for enabeling level building
-
-static void app_input_callback(InputEvent* input_event, void* ctx) {
-    furi_assert(ctx);
-
-    FuriMessageQueue* event_queue = ctx;
-    furi_message_queue_put(event_queue, input_event, FuriWaitForever);
-}
-
 int32_t example_images_main2(void* p) {
     UNUSED(p);
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(InputEvent));
