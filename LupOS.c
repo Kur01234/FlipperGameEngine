@@ -16,6 +16,9 @@
 
 #define LUPOS_PATH LUPOS_APP_BASE_FOLDER "/map1" LUPOS_APP_SCRIPT_EXTENSION
 
+#define LETTER_LENGTH 5
+#define LETTER_HEIGHT 7
+
 /*
 #define HASH_MAP_SIZE 65535
 
@@ -39,6 +42,7 @@ void addIntArrayToHashSet(HashSetIntArray hashSet, int value[3]) {
 }
 */
 int main_map[100][3] = {{0, 0}, {0, 0}};
+bool game_running = false;
 
 static void create_map() {
     char string_map[100];
@@ -145,13 +149,32 @@ static void lock_up_player(Canvas* canvas) {
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     }
 }
+int helper = 1;
+static void draw_arrow(Canvas* canvas, int x, int y) {
+    if(helper >= 80) helper = 1;
+    if(helper % 10 == 0) {
+        canvas_draw_triangle(canvas, x, y, 7, 7, 0);
+        helper = helper + 10;
+    } else {
+        canvas_draw_triangle(canvas, x - 3, y, 7, 7, 0);
+        helper = helper + 1;
+    }
+}
 
 // Screen is 128x64 px
+// Letters are 5x7
 static void app_draw_callback(Canvas* canvas, void* ctx) {
     UNUSED(ctx);
     canvas_clear(canvas);
-    redraw_background_elements(canvas);
-    lock_up_player(canvas);
+    if(game_running == false) {
+        char text[] = "Start Game";
+        int center_x = ((LETTER_LENGTH * sizeof(text)) - sizeof(text)) / 2;
+        canvas_draw_str(canvas, 64 - center_x, 32, text);
+        draw_arrow(canvas, 64 - center_x - 9, 32 - 3);
+    } else {
+        redraw_background_elements(canvas);
+        lock_up_player(canvas);
+    }
 }
 
 // also should be able to load and svae the data to make easy level saves and also for enabeling level building
@@ -182,22 +205,51 @@ int32_t example_images_main(void* p) {
     while(running) {
         if(furi_message_queue_get(event_queue, &event, 100) == FuriStatusOk) {
             if((event.type == InputTypePress) || (event.type == InputTypeRepeat)) {
+                if(game_running) {
+                    switch(event.key) {
+                    case InputKeyLeft:
+                        player_position.x -= 4;
+                        update_obj_position(4, true, false);
+                        break;
+                    case InputKeyRight:
+                        update_obj_position(-4, true, false);
+                        player_position.x += 4;
+                        break;
+                    case InputKeyUp:
+                        update_obj_position(4, false, true);
+                        player_position.y -= 4;
+                        break;
+                    case InputKeyDown:
+                        update_obj_position(-4, false, true);
+                        player_position.y += 4;
+                        break;
+                    case InputKeyBack:
+                        game_running = false;
+                        break;
+                    default:
+                        running = false;
+                        break;
+                    }
+                    continue;
+                }
                 switch(event.key) {
                 case InputKeyLeft:
-                    player_position.x -= 4;
-                    update_obj_position(4, true, false);
+
                     break;
                 case InputKeyRight:
-                    update_obj_position(-4, true, false);
-                    player_position.x += 4;
+
                     break;
                 case InputKeyUp:
-                    update_obj_position(4, false, true);
-                    player_position.y -= 4;
+
                     break;
                 case InputKeyDown:
-                    update_obj_position(-4, false, true);
-                    player_position.y += 4;
+
+                    break;
+                case InputKeyOk:
+
+                    break;
+                case InputKeyBack:
+                    game_running = true;
                     break;
                 default:
                     running = false;
