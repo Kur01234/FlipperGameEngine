@@ -19,30 +19,9 @@
 #define LETTER_LENGTH 5
 #define LETTER_HEIGHT 7
 
-/*
-#define HASH_MAP_SIZE 65535
-
-static unsigned int hash(int i) {
-    return 32767 + i % HASH_MAP_SIZE;
-}
-static unsigned int array_hash(int input[]) {
-    unsigned int i = 0;
-    for(int y = 0; y < 3; y++) {
-        i = i ^ hash(input[y]);
-    }
-    return i;
-}
-
-typedef unsigned int HashSetIntArray[HASH_MAP_SIZE][3];
-
-void addIntArrayToHashSet(HashSetIntArray hashSet, int value[3]) {
-    hashSet[array_hash(value)][0] = value[0];
-    hashSet[array_hash(value)][1] = value[1];
-    hashSet[array_hash(value)][2] = value[2];
-}
-*/
 int main_map[100][3] = {{0, 0}, {0, 0}};
 bool game_running = false;
+bool running = true;
 
 static void create_map() {
     char string_map[100];
@@ -149,14 +128,15 @@ static void lock_up_player(Canvas* canvas) {
         canvas_draw_icon(canvas, player_position.x % 128, player_position.y % 64, &I_player);
     }
 }
+int current_button = 1;
 int helper = 1;
 static void draw_arrow(Canvas* canvas, int x, int y) {
     if(helper >= 80) helper = 1;
     if(helper % 10 == 0) {
-        canvas_draw_triangle(canvas, x, y, 7, 7, 0);
+        canvas_draw_triangle(canvas, x, y * current_button, 7, 7, 0);
         helper = helper + 10;
     } else {
-        canvas_draw_triangle(canvas, x - 3, y, 7, 7, 0);
+        canvas_draw_triangle(canvas, x - 3, y * current_button, 7, 7, 0);
         helper = helper + 1;
     }
 }
@@ -201,7 +181,6 @@ int32_t example_images_main(void* p) {
     create_map();
     InputEvent event;
 
-    bool running = true;
     while(running) {
         if(furi_message_queue_get(event_queue, &event, 100) == FuriStatusOk) {
             if((event.type == InputTypePress) || (event.type == InputTypeRepeat)) {
@@ -240,10 +219,10 @@ int32_t example_images_main(void* p) {
 
                     break;
                 case InputKeyUp:
-
+                    current_button = 1;
                     break;
                 case InputKeyDown:
-
+                    current_button = 10;
                     break;
                 case InputKeyOk:
 
