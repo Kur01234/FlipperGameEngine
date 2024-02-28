@@ -133,25 +133,29 @@ int helper = 1;
 static void draw_arrow(Canvas* canvas, int x, int y) {
     if(helper >= 80) helper = 1;
     if(helper % 10 == 0) {
-        canvas_draw_triangle(canvas, x, y * current_button, 7, 7, 0);
+        canvas_draw_triangle(canvas, x, y + current_button, 7, 7, 0);
         helper = helper + 10;
     } else {
-        canvas_draw_triangle(canvas, x - 3, y * current_button, 7, 7, 0);
+        canvas_draw_triangle(canvas, x - 3, y + current_button, 7, 7, 0);
         helper = helper + 1;
     }
 }
-
+char text[] = "  Play Game  ";
 // Screen is 128x64 px
 // Letters are 5x7
 static void app_draw_callback(Canvas* canvas, void* ctx) {
     UNUSED(ctx);
     canvas_clear(canvas);
+
     if(game_running == false) {
-        char text[] = "Start Game";
+        char text2[] = "Quit";
         int center_x = ((LETTER_LENGTH * sizeof(text)) - sizeof(text)) / 2;
+        int center_x2 = ((LETTER_LENGTH * sizeof(text2)) - sizeof(text2)) / 2;
         canvas_draw_str(canvas, 64 - center_x, 32, text);
+        canvas_draw_str(canvas, 64 - center_x2, 62, text2);
         draw_arrow(canvas, 64 - center_x - 9, 32 - 3);
     } else {
+        strcpy(text, "Continue Game");
         redraw_background_elements(canvas);
         lock_up_player(canvas);
     }
@@ -191,19 +195,21 @@ int32_t example_images_main(void* p) {
                         update_obj_position(4, true, false);
                         break;
                     case InputKeyRight:
-                        update_obj_position(-4, true, false);
                         player_position.x += 4;
+                        update_obj_position(-4, true, false);
                         break;
                     case InputKeyUp:
-                        update_obj_position(4, false, true);
                         player_position.y -= 4;
+                        update_obj_position(4, false, true);
                         break;
                     case InputKeyDown:
-                        update_obj_position(-4, false, true);
                         player_position.y += 4;
+                        update_obj_position(-4, false, true);
                         break;
                     case InputKeyBack:
                         game_running = false;
+                        break;
+                    case InputKeyOk:
                         break;
                     default:
                         running = false;
@@ -212,26 +218,23 @@ int32_t example_images_main(void* p) {
                     continue;
                 }
                 switch(event.key) {
-                case InputKeyLeft:
-
-                    break;
-                case InputKeyRight:
-
-                    break;
                 case InputKeyUp:
                     current_button = 1;
                     break;
                 case InputKeyDown:
-                    current_button = 10;
+                    current_button = 30;
                     break;
                 case InputKeyOk:
-
+                    if(current_button != 1) {
+                        running = false;
+                    } else {
+                        game_running = true;
+                    }
                     break;
                 case InputKeyBack:
                     game_running = true;
                     break;
                 default:
-                    running = false;
                     break;
                 }
             }
