@@ -23,6 +23,16 @@ int main_map[100][3] = {{0, 0}, {0, 0}};
 bool game_running = false;
 bool running = true;
 
+static int player_cords(int x, int y) {
+    int player_cords[IMAGE_SIZE * x + IMAGE_SIZE * y];
+    for(int ii = IMAGE_SIZE; ii >= 0; ii--) {
+        for(int i = IMAGE_SIZE; i >= 0; i--) {
+            player_cords[ii + i] = x + ii + i;
+        }
+    }
+    return player_cords;
+}
+
 static void create_map() {
     char string_map[100];
     File* file = storage_file_alloc(furi_record_open(RECORD_STORAGE));
@@ -146,7 +156,10 @@ char text[] = "  Play Game  ";
 static void app_draw_callback(Canvas* canvas, void* ctx) {
     UNUSED(ctx);
     canvas_clear(canvas);
-
+    int* cords = player_cords(player_position.x, player_position.y);
+    char cords_str[sizeof(cords)];
+    sprintf(cords_str, '%d', cords);
+    canvas_draw_str(canvas, 1, 1, cords_str);
     if(game_running == false) {
         char text2[] = "Quit";
         int center_x = ((LETTER_LENGTH * sizeof(text)) - sizeof(text)) / 2;
