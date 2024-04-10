@@ -19,27 +19,30 @@
 #define LETTER_LENGTH 5
 #define LETTER_HEIGHT 7
 
-int main_map[100][3] = {{0, 0}, {0, 0}};
+int main_map[30][3] = {{0, 0}, {0, 0}};
+int player_cords[IMAGE_SIZE * IMAGE_SIZE] = {0, 0};
 bool game_running = false;
 bool running = true;
 
-static int player_cords(int x, int y) {
-    int player_cords[IMAGE_SIZE * x + IMAGE_SIZE * y];
+static void player_cords_get(int x, int y) {
+    int inplayer_cords[IMAGE_SIZE * IMAGE_SIZE] = {0, 0};
     for(int ii = IMAGE_SIZE; ii >= 0; ii--) {
         for(int i = IMAGE_SIZE; i >= 0; i--) {
-            player_cords[ii + i] = x + ii + i;
+            inplayer_cords[ii + i] = x + ii + i;
+            i--;
+            inplayer_cords[ii + i] = y + ii + i;
         }
     }
-    return player_cords;
+    *player_cords = *inplayer_cords;
 }
 
 static void create_map() {
-    char string_map[100];
+    char string_map[30];
     File* file = storage_file_alloc(furi_record_open(RECORD_STORAGE));
     FURI_LOG_D(TAG, "Create Map Storage Call");
     if(storage_file_open(file, LUPOS_PATH, FSAM_READ, FSOM_OPEN_EXISTING)) {
         FURI_LOG_D(TAG, "Create Map Storage Read");
-        storage_file_read(file, &string_map, 100);
+        storage_file_read(file, &string_map, 30);
     }
     storage_file_close(file);
     storage_file_free(file);
@@ -58,7 +61,7 @@ typedef struct {
 
 static ImagePosition player_position = {.x = 0, .y = 0};
 static ImagePosition previeous_position = {.x = 0, .y = 0};
-static ImagePosition current_position = {.x = 0, .y = 0};
+static ImagePosition current_position = {.x = 1, .y = 1};
 
 static bool getPositionalDrift(int positionX, int positionY, int distanceToEdges) {
     if(positionX - distanceToEdges < 0) {
@@ -99,7 +102,7 @@ static void draw_correct_img(Canvas* canvas, int posx, int posy, int img) {
 
 static void redraw_background_elements(Canvas* canvas) {
     if(getPositionalDrift(player_position.x, player_position.y, 2)) {
-        for(int i = 0; i <= 30; i++) {
+        for(int i = 0; i <= 27; i++) {
             draw_correct_img(
                 canvas,
                 current_position.x - main_map[i][0] % 128,
@@ -108,7 +111,7 @@ static void redraw_background_elements(Canvas* canvas) {
         }
         previeous_position = current_position;
     } else {
-        for(int i = 0; i <= 30; i++) {
+        for(int i = 0; i <= 27; i++) {
             draw_correct_img(
                 canvas,
                 previeous_position.x - main_map[i][0] % 128,
@@ -156,10 +159,6 @@ char text[] = "  Play Game  ";
 static void app_draw_callback(Canvas* canvas, void* ctx) {
     UNUSED(ctx);
     canvas_clear(canvas);
-    int* cords = player_cords(player_position.x, player_position.y);
-    char cords_str[sizeof(cords)];
-    sprintf(cords_str, '%d', cords);
-    canvas_draw_str(canvas, 1, 1, cords_str);
     if(game_running == false) {
         char text2[] = "Quit";
         int center_x = ((LETTER_LENGTH * sizeof(text)) - sizeof(text)) / 2;
@@ -171,6 +170,20 @@ static void app_draw_callback(Canvas* canvas, void* ctx) {
         strcpy(text, "Continue Game");
         redraw_background_elements(canvas);
         lock_up_player(canvas);
+        player_cords_get(player_position.x, player_position.y);
+        int on_point = 0;
+        for(int ii = 0; ii < 27; ii++) {
+            for(int i = 0; i < IMAGE_SIZE * IMAGE_SIZE; i++) {
+                if(player_cords[i] == (current_position.x - main_map[ii][0] % 128) &&
+                   player_cords[i + 1] == (current_position.y - main_map[ii][1] % 64)) {
+                    on_point++;
+                }
+                i++;
+            }
+        }
+        if(on_point > 1) {
+            game_running = false;
+        }
     }
 }
 
@@ -178,7 +191,6 @@ static void app_draw_callback(Canvas* canvas, void* ctx) {
 
 static void app_input_callback(InputEvent* input_event, void* ctx) {
     furi_assert(ctx);
-
     FuriMessageQueue* event_queue = ctx;
     furi_message_queue_put(event_queue, input_event, FuriWaitForever);
 }

@@ -1,0 +1,1 @@
+minicom -D /dev/serial/by-id/usb-Flipper_Devices_Inc._Flipper_Friend_flip_Friend-if00
